@@ -49,7 +49,7 @@ class HYRequest {
         this.loading?.close();
 
         const data = res.data;
-        if (data.code !== '0') {
+        if (data.code !== 0) {
           ElMessage.error(`请求失败~, 错误信息：${data.info}`);
         } else {
           return data;

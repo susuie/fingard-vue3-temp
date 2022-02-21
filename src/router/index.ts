@@ -44,9 +44,9 @@ router.beforeEach((to) => {
   // console.log(router.getRoutes())
   // console.log(to) // route对象
 
-  if (to.path === '/main') {
-    return firstMenu.url;
-  }
+  // if (to.path === '/main') {
+  //   return firstMenu.url;
+  // }
 });
 
 export default router;
