@@ -1,5 +1,5 @@
 <template>
-  <div class="hy-form">
+  <div class="my-form">
     <div class="header">
       <slot name="header"></slot>
     </div>
@@ -8,10 +8,11 @@
         <template v-for="item in formItems" :key="item.label">
           <el-col v-bind="colLayout">
             <el-form-item
-              v-if="!item.isHidden"
+              v-show="!item.isHidden"
               :label="item.label"
               :rules="item.rules"
               :style="itemStyle"
+              :label-width="item.labelWidth"
             >
               <template
                 v-if="item.type === 'input' || item.type === 'password'"
@@ -31,13 +32,24 @@
                   style="width: 100%"
                   :model-value="modelValue[`${item.field}`]"
                   @update:modelValue="handleValueChange($event, item.field)"
+                  @visible-change="
+                    (val) => handleVisibleChange(val, item.field)
+                  "
                 >
                   <el-option
-                    v-for="option in item.options"
+                    v-for="option in item.options ?? list[item.field]"
+                    :label="option.title"
                     :key="option.value"
                     :value="option.value"
-                    >{{ option.title }}</el-option
-                  >
+                  />
+                  <el-pagination
+                    v-if="otherOptions[item.field]?.total"
+                    @current-change="handleCurrentChange"
+                    :current-page="otherOptions[item.field]?.pageNum"
+                    :page-size="otherOptions[item.field]?.pageSize"
+                    layout="prev, pager, next"
+                    :total="otherOptions[item.field]?.total ?? 0"
+                  />
                 </el-select>
               </template>
               <template v-else-if="item.type === 'datepicker'">
@@ -47,6 +59,28 @@
                   :model-value="modelValue[`${item.field}`]"
                   @update:modelValue="handleValueChange($event, item.field)"
                 ></el-date-picker>
+              </template>
+              <template v-else-if="item.type === 'cascader'">
+                <el-cascader
+                  :placeholder="item.placeholder"
+                  :options="item.options ?? list[item.field]"
+                  v-bind="item.otherOptions"
+                  :model-value="modelValue[`${item.field}`]"
+                  @update:modelValue="handleValueChange($event, item.field)"
+                />
+              </template>
+              <template v-else-if="item.type === 'radio'">
+                <el-radio-group
+                  :model-value="modelValue[`${item.field}`]"
+                  @update:modelValue="handleValueChange($event, item.field)"
+                >
+                  <el-radio
+                    v-for="radio in item.options ?? list[item.field]"
+                    :label="radio.value"
+                    :key="radio.value"
+                    >{{ radio.title }}</el-radio
+                  >
+                </el-radio-group>
               </template>
             </el-form-item>
           </el-col>
@@ -79,7 +113,7 @@ export default defineComponent({
     },
     itemStyle: {
       type: Object,
-      default: () => ({ padding: '10px 40px' })
+      default: () => ({ padding: '10px 20px' })
     },
     colLayout: {
       type: Object,
@@ -90,36 +124,38 @@ export default defineComponent({
         sm: 24,
         xs: 24
       })
+    },
+    list: {
+      type: Object,
+      default: () => {
+        return {};
+      }
+    },
+    otherOptions: {
+      type: Object,
+      default: () => {
+        return {};
+      }
     }
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'pageChange'],
   setup(props, { emit }) {
-    // const formData = ref({ ...props.modelValue })
-
-    // watch(
-    //   formData,
-    //   (newValue) => {
-    //     console.log(newValue)
-    //     emit('update:modelValue', newValue)
-    //   },
-    //   {
-    //     deep: true
-    //   }
-    // )
-
     const handleValueChange = (value: any, field: string) => {
       emit('update:modelValue', { ...props.modelValue, [field]: value });
     };
-
+    const handleCurrentChange = (pageNum: number) => {
+      emit('pageChange', pageNum);
+    };
+    const handleVisibleChange = (val: boolean, field: string) => {
+      if (!val && props.otherOptions[field]) {
+        handleCurrentChange(1);
+      }
+    };
     return {
-      handleValueChange
+      handleValueChange,
+      handleCurrentChange,
+      handleVisibleChange
     };
   }
 });
 </script>
-
-<style scoped lang="less">
-.hy-form {
-  padding-top: 22px;
-}
-</style>

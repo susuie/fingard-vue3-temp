@@ -43,8 +43,8 @@
     "lint-staged": "^12.3.4",
     "prettier": "^2.2.1",
     "typescript": "~4.1.5",
-    "unplugin-auto-import": "^0.6.0",
-    "unplugin-vue-components": "^0.17.18"
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "unplugin-element-plus": "^0.4.0"
   },
   "config": {
     "commitizen": {

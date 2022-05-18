@@ -1,37 +1,38 @@
-const AutoImport = require('unplugin-auto-import/webpack');
-const Components = require('unplugin-vue-components/webpack');
-const { ElementPlusResolver } = require('unplugin-vue-components/resolvers');
+const production = process.env.NODE_ENV === 'production';
+const uglify = require('uglifyjs-webpack-plugin');
+
 module.exports = {
-  publicPath: '/',
+  publicPath: process.env.VUE_APP_PUBLIC_PATH,
   devServer: {
     proxy: {
-      '^/api': {
-        target: 'http://152.136.185.210:4000',
-        pathRewrite: {
-          '^/api': ''
-        },
-        changeOrigin: true
+      '^/api/AUTHCORE': {
+        target: 'http://chili-test.fingard.cn'
+        //target: 'http://172.18.12.96:8666'
+        //changeOrigin: true
+      },
+      '^/api/BIZCORE': {
+        //target: 'http://chili-test.fingard.cn'
+        target: 'http://gateway.rh-chili-test.rhk8s.fingard.cn'
       }
     }
   },
   configureWebpack: {
     resolve: {
       alias: {
+        src: '@',
         components: '@/components'
       }
     },
+    devtool: production ? 'none' : 'cheap-module-eval-source-map',
     plugins: [
-      AutoImport({
-        resolvers: [ElementPlusResolver()]
+      require('unplugin-element-plus/webpack')({
+        // options
       }),
-      Components({
-        resolvers: [ElementPlusResolver()]
-      })
+      new uglify({ include: /\/src/, parallel: true })
     ]
+  },
+  css: {
+    // 是否使用css分离插件 ExtractTextPlugin
+    extract: true
   }
-  // chainWebpack: (config) => {
-  //   config.resolve.alias
-  //     .set('@', path.resolve(__dirname, 'src'))
-  //     .set('components', '@/components')
-  // }
 };

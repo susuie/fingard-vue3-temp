@@ -1,10 +1,11 @@
 export interface IAccount {
-  name: string;
+  username: string;
   password: string;
+  type: number;
 }
 
-export interface ILoginResult {
-  id: number;
-  name: string;
-  token: string;
+export interface IPhone {
+  mobile: string;
+  code: string;
+  type: number;
 }

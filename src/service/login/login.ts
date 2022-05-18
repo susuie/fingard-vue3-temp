@@ -1,30 +1,31 @@
-import hyRequest from '../index';
+import zRequest from '../index';
+import loginRequest from '../login';
 
-import { IAccount, ILoginResult } from './type';
+import { IAccount, IPhone } from './type';
 import { IDataType } from '../types';
 
 enum LoginAPI {
-  AccountLogin = '/login',
+  AccountLogin = '/tokenApi/getAccessToken',
   LoginUserInfo = '/users/',
   UserMenus = '/role/'
 }
 
-export function accountLoginRequest(account: IAccount) {
-  return hyRequest.post<IDataType<ILoginResult>>({
+export function accountLoginRequest(account: IAccount | IPhone) {
+  return loginRequest.post<IDataType>({
     url: LoginAPI.AccountLogin,
-    data: account
+    params: account
   });
 }
 
 export function requestUserInfoById(id: number) {
-  return hyRequest.get<IDataType>({
+  return zRequest.get<IDataType>({
     url: LoginAPI.LoginUserInfo + id,
     showLoading: false
   });
 }
 
 export function requestUserMenusByRoleId(id: number) {
-  return hyRequest.get<IDataType>({
+  return zRequest.get<IDataType>({
     url: LoginAPI.UserMenus + id + '/menu',
     showLoading: false
   });

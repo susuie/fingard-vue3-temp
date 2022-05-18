@@ -1,17 +1,13 @@
+// service统一出口
 import ZRequest from './request';
-import { BASE_URL, TIME_OUT } from './request/config';
+import { TIME_OUT } from './request/config';
 
-import localCache from '@/utils/cache';
-
-const zRequest = new ZRequest({
-  baseURL: BASE_URL,
+const loginRequest = new ZRequest({
+  baseURL: '/api/AUTHCORE/',
   timeout: TIME_OUT,
   interceptors: {
     requestInterceptor: (config) => {
-      // 携带token的拦截
       config.headers = config.headers ?? {};
-      const token = localCache.getCache('token');
-      config.headers.Authorization = token;
       //const label = 'eureka-label';
       const type = 'Content-Type';
       //config.headers[label] = 'Makayla'; //'linccc';
@@ -24,13 +20,6 @@ const zRequest = new ZRequest({
     responseInterceptor: (res) => {
       const data = res.data;
       if (data.code !== '0') {
-        if (data.code === '4') {
-          data.isDelete = true;
-          return data;
-        }
-        if (data.code && data.info.includes('素材已存在')) {
-          return data.data;
-        }
         return Promise.reject(`请求失败~, 错误信息：${data.info}`);
       } else {
         return data;
@@ -45,4 +34,4 @@ const zRequest = new ZRequest({
   }
 });
 
-export default zRequest;
+export default loginRequest;

@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 
 import localCache from '@/utils/cache';
@@ -26,10 +26,29 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/not-found/not-found.vue')
   }
 ];
-
+const allRoutes: RouteRecordRaw[] = [];
+const routeFiles = require.context('@/views/main', true, /\.vue/);
+const routeFilter = routeFiles.keys().filter((r) => {
+  return r !== './main.vue';
+});
+routeFilter.forEach((key) => {
+  const component = require('@/views/main' + key.substring(1));
+  const name = key.split('/');
+  const route: RouteRecordRaw = {
+    path: key.split('.')[1],
+    name: component.default.name ?? name[name.length - 1].split('.')[0],
+    component: component.default
+  };
+  if (route.name === firstMenu.name) {
+    route.alias = '';
+  }
+  allRoutes.push(route);
+});
+routes[2].children = allRoutes;
+document.title = '赤狸管理后台';
 const router = createRouter({
   routes,
-  history: createWebHashHistory()
+  history: createWebHistory(process.env.VUE_APP_PUBLIC_PATH)
 });
 
 // 导航守卫
@@ -40,13 +59,6 @@ router.beforeEach((to) => {
       return '/login';
     }
   }
-
-  // console.log(router.getRoutes())
-  // console.log(to) // route对象
-
-  // if (to.path === '/main') {
-  //   return firstMenu.url;
-  // }
 });
 
 export default router;

@@ -4,3 +4,13 @@ export interface ILoginState {
   userMenus: any;
   permissions: string[];
 }
+
+export interface IAccount {
+  name: string;
+  password: string;
+}
+
+export interface IPhone {
+  mobile: string;
+  code: string;
+}

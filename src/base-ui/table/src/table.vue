@@ -1,19 +1,20 @@
 <template>
-  <div class="hy-table">
+  <div class="my-table">
     <div class="header">
-      <slot name="header">
-        <div class="title">{{ title }}</div>
-        <div class="handler">
-          <slot name="headerHandler"></slot>
-        </div>
-      </slot>
+      <slot name="headerHandler"></slot>
     </div>
     <el-table
+      ref="myTable"
       :data="listData"
       border
       style="width: 100%"
-      @selection-change="handleSelectionChange"
+      :row-key="uniqueId"
+      :row-style="seletedRowStyle"
       v-bind="childrenProps"
+      @selection-change="handleSelectionChange"
+      @row-click="handleClick"
+      @row-dblclick="handleDbClick"
+      @sort-change="sortChange"
     >
       <el-table-column
         v-if="showSelectColumn"
@@ -43,9 +44,9 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="page.currentPage"
+          :current-page="page.pageNum"
           :page-size="page.pageSize"
-          :page-sizes="[20, 50, 100, 150, 200]"
+          :page-sizes="[10, 20, 50, 100, 150, 200]"
           layout="total, sizes, prev, pager, next, jumper"
           :total="listCount"
         >
@@ -56,7 +57,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   props: {
@@ -86,7 +87,7 @@ export default defineComponent({
     },
     page: {
       type: Object,
-      default: () => ({ currentPage: 0, pageSize: 10 })
+      default: () => ({ pageNum: 0, pageSize: 10 })
     },
     childrenProps: {
       type: Object,
@@ -95,26 +96,61 @@ export default defineComponent({
     showFooter: {
       type: Boolean,
       default: true
+    },
+    uniqueId: {
+      type: String,
+      default: 'id'
     }
   },
-  emits: ['selectionChange', 'update:page'],
+  emits: [
+    'selectionChange',
+    'handleClick',
+    'handleDbClick',
+    'update:page',
+    'sortChange'
+  ],
   setup(props, { emit }) {
+    const myTable: any = ref(null);
+    const selection = ref([]);
+    const seletedRowStyle = ({ row }: any) => {
+      if (
+        selection.value.some((item: any) => {
+          return item.id === row.id;
+        })
+      ) {
+        return { background: '#b3e9ff' };
+      }
+    };
     const handleSelectionChange = (value: any) => {
+      selection.value = value;
       emit('selectionChange', value);
     };
-
-    const handleCurrentChange = (currentPage: number) => {
-      emit('update:page', { ...props.page, currentPage });
+    const handleClick = (row: any) => {
+      myTable.value?.toggleRowSelection(row);
+      emit('handleClick', row);
+    };
+    const handleDbClick = (row: any) => {
+      emit('handleDbClick', row);
+    };
+    const handleCurrentChange = (pageNum: number) => {
+      emit('update:page', { ...props.page, pageNum });
     };
 
     const handleSizeChange = (pageSize: number) => {
       emit('update:page', { ...props.page, pageSize });
     };
-
+    const sortChange = ({ column, prop, order }: any) => {
+      emit('sortChange', { column, prop, order });
+    };
     return {
+      myTable,
+      seletedRowStyle,
       handleSelectionChange,
       handleCurrentChange,
-      handleSizeChange
+      handleSizeChange,
+      handleClick,
+      handleDbClick,
+      sortChange
     };
   }
 });
@@ -123,19 +159,9 @@ export default defineComponent({
 <style scoped lang="less">
 .header {
   display: flex;
-  height: 45px;
-  padding: 0 5px;
-  justify-content: space-between;
+  padding: 0 5px 10px;
+  justify-content: flex-start;
   align-items: center;
-
-  .title {
-    font-size: 20px;
-    font-weight: 700;
-  }
-
-  .handler {
-    align-items: center;
-  }
 }
 
 .footer {

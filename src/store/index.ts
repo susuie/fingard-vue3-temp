@@ -21,9 +21,9 @@ const store = createStore<IRootState>({
   },
   getters: {},
   actions: {
-    async getInitialDataAction({ commit }) {
-      //todo
-    }
+    // async getInitialDataAction({ commit }) {
+    //   //todo
+    // }
   },
   modules: {
     login
@@ -32,7 +32,6 @@ const store = createStore<IRootState>({
 
 export function setupStore() {
   store.dispatch('login/loadLocalLogin');
-  // store.dispatch('getInitialDataAction')
 }
 
 export function useStore(): Store<IStoreType> {

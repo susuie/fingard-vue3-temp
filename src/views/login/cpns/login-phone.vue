@@ -1,7 +1,7 @@
 <template>
-  <el-form label-width="60px">
-    <el-form-item label="手机号" prop="num">
-      <el-input v-model="phone.num" />
+  <el-form label-width="60px" ref="formRef">
+    <el-form-item label="手机号" prop="mobile">
+      <el-input v-model="phone.mobile" />
     </el-form-item>
     <el-form-item label="验证码" prop="code">
       <div class="get-code">
@@ -13,17 +13,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue';
+import { defineComponent, reactive, ref } from 'vue';
+import { ElForm } from 'element-plus';
+import { useStore } from 'vuex';
 
 export default defineComponent({
   setup() {
     const phone = reactive({
-      num: '',
+      mobile: '',
       code: ''
     });
-
+    const store = useStore();
+    const formRef = ref<InstanceType<typeof ElForm>>();
+    const loginAction = () => {
+      formRef.value?.validate((valid) => {
+        if (valid) {
+          store.dispatch('login/accountLoginAction', { ...phone });
+        }
+      });
+    };
     return {
-      phone
+      phone,
+      formRef,
+      loginAction
     };
   }
 });
